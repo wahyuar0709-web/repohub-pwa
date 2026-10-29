@@ -33,6 +33,14 @@ const languageColors = {
   Default: "#6ee7ff"
 };
 
+function getAppUrl(repo) {
+  const homepage = typeof repo.homepage === "string" ? repo.homepage.trim() : "";
+  const repoOwner = repo.owner && repo.owner.login ? repo.owner.login : username;
+  const githubPagesUrl = repo.has_pages ? `https://${repoOwner}.github.io/${repo.name}/` : "";
+
+  return homepage || githubPagesUrl || "";
+}
+
 async function fetchRepos() {
   try {
     loading.classList.remove("hidden");
@@ -128,8 +136,9 @@ function renderRepos() {
     .map((repo) => {
       const color = languageColors[repo.language] || languageColors.Default;
       const description = repo.description || "Tidak ada deskripsi untuk repo ini.";
-      const appLink = repo.homepage
-        ? `<a href="${repo.homepage}" target="_blank" rel="noopener noreferrer" class="secondary">Open App</a>`
+      const appUrl = getAppUrl(repo);
+      const appLink = appUrl
+        ? `<a href="${appUrl}" target="_blank" rel="noopener noreferrer" class="secondary">Open App</a>`
         : "";
       const repoLabel = repo.private ? "Private" : "Public";
 
