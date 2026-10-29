@@ -128,8 +128,8 @@ function renderRepos() {
     .map((repo) => {
       const color = languageColors[repo.language] || languageColors.Default;
       const description = repo.description || "Tidak ada deskripsi untuk repo ini.";
-      const homepage = repo.homepage
-        ? `<a href="${repo.homepage}" target="_blank" rel="noopener noreferrer" class="secondary">Demo</a>`
+      const appLink = repo.homepage
+        ? `<a href="${repo.homepage}" target="_blank" rel="noopener noreferrer" class="secondary">Open App</a>`
         : "";
       const repoLabel = repo.private ? "Private" : "Public";
 
@@ -152,8 +152,8 @@ function renderRepos() {
           </div>
 
           <div class="repo-actions">
+            ${appLink}
             <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer">Open Repo</a>
-            ${homepage}
           </div>
         </article>
       `;
