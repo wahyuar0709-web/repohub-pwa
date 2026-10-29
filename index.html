@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07111f" />
+    <meta name="description" content="PWA katalog repo GitHub akun wahyuar0709-web" />
+    <title>RepoHub | @wahyuar0709-web</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-icon">GH</div>
+          <div>
+            <p class="eyebrow">GitHub Portfolio</p>
+            <h1>@wahyuar0709-web</h1>
+          </div>
+        </div>
+
+        <button id="installBtn" class="install-btn hidden" type="button">
+          Install App
+        </button>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="pill">Repository Launcher</span>
+          <h2>Semua project Anda dalam satu aplikasi PWA.</h2>
+          <p>
+            Jelajahi repositori, cari berdasarkan bahasa, dan buka aplikasi
+            favorit Anda dalam satu tampilan modern.
+          </p>
+        </div>
+
+        <div class="stats">
+          <div class="stat-card">
+            <label>Total Repo</label>
+            <strong id="totalRepo">0</strong>
+          </div>
+          <div class="stat-card">
+            <label>Bahasa</label>
+            <strong id="totalLanguage">0</strong>
+          </div>
+          <div class="stat-card">
+            <label>Status</label>
+            <strong>Online</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Cari repo, bahasa, atau deskripsi..."
+            aria-label="Cari repo"
+          />
+        </div>
+
+        <div id="filterChips" class="filter-chips" aria-label="Filter bahasa"></div>
+      </section>
+
+      <main class="content">
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          <span>Memuat repositori...</span>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+
+        <div id="repoList" class="repo-grid" aria-live="polite"></div>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
