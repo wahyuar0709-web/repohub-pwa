@@ -473,6 +473,33 @@ h1 {
   color: var(--muted);
 }
 
+.update-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.96);
+  color: white;
+  border: 1px solid rgba(110, 231, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 20px 30px rgba(2, 6, 23, 0.45);
+  font-weight: 600;
+}
+
+.update-toast button {
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  color: #07121d;
+  font-weight: 800;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
 @media (max-width: 820px) {
   .hero {
     grid-template-columns: 1fr;
