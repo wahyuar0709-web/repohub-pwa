@@ -195,12 +195,33 @@ installBtn.addEventListener("click", async () => {
   installBtn.classList.add("hidden");
 });
 
-if ("serviceWorker" in navigator) {
+function setupServiceWorkerUpdate() {
+  if (!("serviceWorker" in navigator)) return;
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    window.location.reload();
+  });
+
+  navigator.serviceWorker.ready.then((registration) => {
+    registration.addEventListener("updatefound", () => {
+      const newWorker = registration.installing;
+      if (!newWorker) return;
+
+      newWorker.addEventListener("statechange", () => {
+        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          console.log("PWA update tersedia, reload halaman...");
+          window.location.reload();
+        }
+      });
+    });
+  });
+
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("./sw.js")
-      .then(() => {
+      .then((registration) => {
         console.log("Service Worker registered.");
+        registration.update();
       })
       .catch((error) => {
         console.error("Service Worker registration failed:", error);
@@ -208,4 +229,5 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+setupServiceWorkerUpdate();
 fetchRepos();
