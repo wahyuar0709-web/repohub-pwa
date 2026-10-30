@@ -30,15 +30,26 @@ const languageColors = {
   Rust: "#dea584",
   Dockerfile: "#384d54",
   JSON: "#f1e05a",
-  Default: "#6ee7ff"
+  Default: "#6ee7ff",
 };
 
-function getAppUrl(repo) {
+function buildAppUrl(repo) {
   const homepage = typeof repo.homepage === "string" ? repo.homepage.trim() : "";
   const repoOwner = repo.owner && repo.owner.login ? repo.owner.login : username;
   const githubPagesUrl = repo.has_pages ? `https://${repoOwner}.github.io/${repo.name}/` : "";
-
   return homepage || githubPagesUrl || "";
+}
+
+function getCardIcon(name) {
+  const initials = name
+    .replace(/[-_]/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("");
+
+  return initials || "GH";
 }
 
 async function fetchRepos() {
@@ -98,16 +109,10 @@ function getFilteredRepos() {
   const query = searchInput.value.trim().toLowerCase();
 
   return allRepos.filter((repo) => {
-    const matchesFilter =
-      currentFilter === "all" || repo.language === currentFilter;
-
+    const matchesFilter = currentFilter === "all" || repo.language === currentFilter;
     const matchesSearch =
       !query ||
-      [
-        repo.name,
-        repo.description || "",
-        repo.language || "",
-      ]
+      [repo.name, repo.description || "", repo.language || ""]
         .join(" ")
         .toLowerCase()
         .includes(query);
@@ -136,33 +141,34 @@ function renderRepos() {
     .map((repo) => {
       const color = languageColors[repo.language] || languageColors.Default;
       const description = repo.description || "Tidak ada deskripsi untuk repo ini.";
-      const appUrl = getAppUrl(repo);
+      const appUrl = buildAppUrl(repo);
       const appLink = appUrl
-        ? `<a href="${appUrl}" target="_blank" rel="noopener noreferrer" class="secondary">Open App</a>`
+        ? `<a href="${appUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-live">Open App</a>`
         : "";
-      const repoLabel = repo.private ? "Private" : "Public";
+      const badge = appUrl ? '<span class="status-badge live">Live</span>' : '<span class="status-badge repo">Repo</span>';
+      const iconText = getCardIcon(repo.name);
 
       return `
-        <article class="repo-card">
-          <div class="repo-top">
-            <div class="repo-head">
-              <span class="lang-dot" style="background:${color}; color:${color};"></span>
-              <h3 class="repo-name">${repo.name}</h3>
-            </div>
-            <span class="repo-badge">${repoLabel}</span>
+        <article class="repo-card" style="--card-accent:${color};">
+          <div class="card-top">
+            <div class="mini-icon" style="background:${color};">${iconText}</div>
+            ${badge}
           </div>
 
-          <p class="repo-description">${description}</p>
+          <div class="card-body">
+            <h3>${repo.name}</h3>
+            <p>${description}</p>
+          </div>
 
-          <div class="repo-meta">
+          <div class="meta-row">
             <span>⭐ ${repo.stargazers_count || 0}</span>
             <span>🍴 ${repo.forks_count || 0}</span>
             <span>${getLanguageBadge(repo.language)}</span>
           </div>
 
-          <div class="repo-actions">
+          <div class="card-actions">
             ${appLink}
-            <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer">Open Repo</a>
+            <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Open Repo</a>
           </div>
         </article>
       `;
