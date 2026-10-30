@@ -1,3 +1,4 @@
+const APP_VERSION = "2026-10-30-4";
 const username = "wahyuar0709-web";
 const repoList = document.getElementById("repoList");
 const loading = document.getElementById("loading");
@@ -7,10 +8,13 @@ const totalRepo = document.getElementById("totalRepo");
 const totalLanguage = document.getElementById("totalLanguage");
 const filterChips = document.getElementById("filterChips");
 const installBtn = document.getElementById("installBtn");
+const updateToast = document.getElementById("updateToast");
+const updateBtn = document.getElementById("updateBtn");
 
 let allRepos = [];
 let currentFilter = "all";
 let deferredPrompt = null;
+let waitingWorker = null;
 
 const languageColors = {
   JavaScript: "#f1e05a",
@@ -57,9 +61,7 @@ async function fetchRepos() {
     loading.classList.remove("hidden");
     errorBox.classList.add("hidden");
 
-    const response = await fetch(
-      `https://api.github.com/users/${username}/repos?per_page=100`
-    );
+    const response = await fetch(`https://api.github.com/users/${username}/repos?per_page=100`);
 
     if (!response.ok) {
       throw new Error("Gagal memuat repositori dari GitHub.");
@@ -176,6 +178,17 @@ function renderRepos() {
     .join("");
 }
 
+function showUpdateToast() {
+  if (updateToast) updateToast.classList.remove("hidden");
+}
+
+function refreshApp() {
+  if (waitingWorker) {
+    waitingWorker.postMessage({ type: "SKIP_WAITING" });
+  }
+  window.location.reload();
+}
+
 searchInput.addEventListener("input", renderRepos);
 
 window.addEventListener("beforeinstallprompt", (event) => {
@@ -195,39 +208,37 @@ installBtn.addEventListener("click", async () => {
   installBtn.classList.add("hidden");
 });
 
-function setupServiceWorkerUpdate() {
-  if (!("serviceWorker" in navigator)) return;
+if (updateBtn) {
+  updateBtn.addEventListener("click", refreshApp);
+}
 
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    window.location.reload();
-  });
-
-  navigator.serviceWorker.ready.then((registration) => {
-    registration.addEventListener("updatefound", () => {
-      const newWorker = registration.installing;
-      if (!newWorker) return;
-
-      newWorker.addEventListener("statechange", () => {
-        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-          console.log("PWA update tersedia, reload halaman...");
-          window.location.reload();
-        }
-      });
-    });
-  });
-
+if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("./sw.js")
+      .register(`./sw.js?v=${APP_VERSION}`, { scope: "./", updateViaCache: "none" })
       .then((registration) => {
-        console.log("Service Worker registered.");
-        registration.update();
+        console.log("Service Worker registered with version:", APP_VERSION);
+
+        registration.addEventListener("updatefound", () => {
+          const installing = registration.installing;
+          if (!installing) return;
+
+          installing.addEventListener("statechange", () => {
+            if (installing.state === "installed" && navigator.serviceWorker.controller) {
+              showUpdateToast();
+              waitingWorker = installing;
+            }
+          });
+        });
       })
       .catch((error) => {
         console.error("Service Worker registration failed:", error);
       });
   });
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    window.location.reload();
+  });
 }
 
-setupServiceWorkerUpdate();
 fetchRepos();

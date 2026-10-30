@@ -490,10 +490,14 @@ h1 {
   font-weight: 600;
 }
 
+.update-toast.hidden {
+  display: none;
+}
+
 .update-toast button {
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  background: linear-gradient(135deg, #6ee7ff, #8b5cf6);
   color: #07121d;
   font-weight: 800;
   padding: 8px 12px;
