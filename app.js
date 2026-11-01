@@ -1,5 +1,6 @@
-const APP_VERSION = "2026-11-01-1";
+const APP_VERSION = "2026-11-01-3";
 const username = "wahyuar0709-web";
+
 const repoList = document.getElementById("repoList");
 const loading = document.getElementById("loading");
 const errorBox = document.getElementById("error");
@@ -10,22 +11,6 @@ const filterChips = document.getElementById("filterChips");
 const installBtn = document.getElementById("installBtn");
 const updateToast = document.getElementById("updateToast");
 const updateBtn = document.getElementById("updateBtn");
-const profileName = document.getElementById("profileName");
-const profileBio = document.getElementById("profileBio");
-const profileMeta = document.getElementById("profileMeta");
-const repoDetailModal = document.getElementById("repoDetailModal");
-const repoDetailBackdrop = document.getElementById("repoDetailBackdrop");
-const repoDetailClose = document.getElementById("repoDetailClose");
-const repoDetailIcon = document.getElementById("repoDetailIcon");
-const repoDetailTitle = document.getElementById("repoDetailTitle");
-const repoDetailDescription = document.getElementById("repoDetailDescription");
-const repoDetailStats = document.getElementById("repoDetailStats");
-const repoDetailLanguage = document.getElementById("repoDetailLanguage");
-const repoDetailBranch = document.getElementById("repoDetailBranch");
-const repoDetailUpdated = document.getElementById("repoDetailUpdated");
-const repoDetailTopics = document.getElementById("repoDetailTopics");
-const repoDetailLink = document.getElementById("repoDetailLink");
-const repoDetailAppLink = document.getElementById("repoDetailAppLink");
 
 let allRepos = [];
 let currentFilter = "all";
@@ -53,6 +38,27 @@ const languageColors = {
   Default: "#6ee7ff",
 };
 
+function showLoading(isLoading) {
+  if (!loading) return;
+  if (isLoading) {
+    loading.classList.remove("hidden");
+  } else {
+    loading.classList.add("hidden");
+  }
+}
+
+function setError(message) {
+  if (!errorBox) return;
+  errorBox.textContent = message;
+  errorBox.classList.remove("hidden");
+}
+
+function clearError() {
+  if (!errorBox) return;
+  errorBox.textContent = "";
+  errorBox.classList.add("hidden");
+}
+
 function buildAppUrl(repo) {
   const homepage = typeof repo.homepage === "string" ? repo.homepage.trim() : "";
   const repoOwner = repo.owner && repo.owner.login ? repo.owner.login : username;
@@ -72,105 +78,44 @@ function getCardIcon(name) {
   return initials || "GH";
 }
 
-function closeRepoDetail() {
-  if (!repoDetailModal) return;
-  repoDetailModal.classList.add("hidden");
-  repoDetailModal.setAttribute("aria-hidden", "true");
-}
-
-function openRepoDetail(repo) {
-  if (!repo) return;
-
-  const appUrl = buildAppUrl(repo);
-  const iconText = getCardIcon(repo.name);
-  const description = repo.description || "Tidak ada deskripsi untuk repo ini.";
-
-  repoDetailIcon.textContent = iconText;
-  repoDetailTitle.textContent = repo.name;
-  repoDetailDescription.textContent = description;
-  repoDetailLanguage.textContent = repo.language || "Belum diketahui";
-  repoDetailBranch.textContent = repo.default_branch || "main";
-  repoDetailUpdated.textContent = new Date(repo.updated_at || Date.now()).toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-  repoDetailTopics.textContent = Array.isArray(repo.topics) && repo.topics.length
-    ? repo.topics.slice(0, 5).join(", ")
-    : "General";
-
-  repoDetailStats.innerHTML = [
-    { icon: "⭐", label: "Stars", value: repo.stargazers_count || 0 },
-    { icon: "🍴", label: "Forks", value: repo.forks_count || 0 },
-    { icon: "⚠️", label: "Issues", value: repo.open_issues_count || 0 },
-    { icon: "👀", label: "Watchers", value: repo.watchers_count || 0 },
-  ]
-    .map(
-      (stat) => `
-        <div class="detail-stat">
-          <span>${stat.icon}</span>
-          <div>
-            <strong>${stat.value}</strong>
-            <small>${stat.label}</small>
-          </div>
-        </div>
-      `
-    )
-    .join("");
-
-  repoDetailLink.href = repo.html_url || "#";
-  repoDetailLink.textContent = "Open Repo";
-
-  if (appUrl) {
-    repoDetailAppLink.href = appUrl;
-    repoDetailAppLink.classList.remove("hidden");
-    repoDetailAppLink.textContent = "Open App";
-  } else {
-    repoDetailAppLink.classList.add("hidden");
-  }
-
-  repoDetailModal.classList.remove("hidden");
-  repoDetailModal.setAttribute("aria-hidden", "false");
-}
-
-async function fetchJson(url) {
+async function fetchGitHubJson(url) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
     const response = await fetch(url, {
+      cache: "no-store",
+      signal: controller.signal,
       headers: {
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
       },
-      signal: controller.signal,
     });
 
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(
-        response.status === 403
-          ? "GitHub API rate limit tercapai, coba beberapa saat lagi."
-          : `GitHub API gagal: ${response.status}${text ? ` - ${text.slice(0, 120)}` : ""}`
-      );
+      throw new Error(`HTTP ${response.status}`);
     }
 
     return await response.json();
   } finally {
-    clearTimeout(timeout);
+    clearTimeout(timeoutId);
   }
 }
 
 async function fetchProfile() {
-  try {
-    const profile = await fetchJson(`https://api.github.com/users/${username}`);
+  const profileNameEl = document.getElementById("profileName");
+  const profileBioEl = document.getElementById("profileBio");
+  const profileMetaEl = document.getElementById("profileMeta");
 
-    if (profileName) profileName.textContent = `@${profile.login || username}`;
-    if (profileBio) {
-      profileBio.textContent = profile.bio || "Membangun produk dan eksperimen digital.";
+  try {
+    const profile = await fetchGitHubJson(`https://api.github.com/users/${username}`);
+
+    if (profileNameEl) profileNameEl.textContent = `@${profile.login || username}`;
+    if (profileBioEl) {
+      profileBioEl.textContent = profile.bio || "Membangun produk dan eksperimen digital.";
     }
-    if (profileMeta) {
-      profileMeta.innerHTML = `
+    if (profileMetaEl) {
+      profileMetaEl.innerHTML = `
         <span>Followers ${profile.followers || 0}</span>
         <span>Following ${profile.following || 0}</span>
         <span>Public Repos ${profile.public_repos || 0}</span>
@@ -178,22 +123,25 @@ async function fetchProfile() {
     }
   } catch (error) {
     console.warn("Profile fetch failed:", error);
-    if (profileName) profileName.textContent = `@${username}`;
-    if (profileBio) profileBio.textContent = "Membangun produk dan eksperimen digital.";
-    if (profileMeta) {
-      profileMeta.innerHTML = `<span>GitHub API belum siap</span>`;
+    if (profileNameEl) profileNameEl.textContent = `@${username}`;
+    if (profileBioEl) profileBioEl.textContent = "Membangun produk dan eksperimen digital.";
+    if (profileMetaEl) {
+      profileMetaEl.innerHTML = `<span>GitHub API tidak tersedia</span>`;
     }
   }
 }
 
 async function fetchRepos() {
-  loading.classList.remove("hidden");
-  errorBox.classList.add("hidden");
+  showLoading(true);
+  clearError();
 
   try {
-    const data = await fetchJson(`https://api.github.com/users/${username}/repos?per_page=100`);
+    const data = await fetchGitHubJson(`https://api.github.com/users/${username}/repos?per_page=100`);
+
     allRepos = Array.isArray(data)
-      ? data.filter((repo) => !repo.private).sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
+      ? data
+          .filter((repo) => !repo.private)
+          .sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
       : [];
 
     renderFilters();
@@ -203,13 +151,13 @@ async function fetchRepos() {
     allRepos = [];
     renderFilters();
     renderRepos();
-    errorBox.textContent =
-      error.message && error.message.includes("rate limit")
-        ? "GitHub API rate limit sudah tercapai. Coba beberapa saat lagi."
-        : "Tidak dapat memuat data repositori saat ini. Coba lagi nanti.";
-    errorBox.classList.remove("hidden");
+    setError(
+      error && error.message && error.message.includes("403")
+        ? "GitHub API rate limit tercapai. Coba beberapa saat lagi."
+        : "Tidak dapat memuat data repositori saat ini. Coba lagi nanti."
+    );
   } finally {
-    loading.classList.add("hidden");
+    showLoading(false);
   }
 }
 
@@ -219,6 +167,9 @@ function getLanguageBadge(language) {
 
 function renderFilters() {
   const languages = ["all", ...new Set(allRepos.map((repo) => repo.language).filter(Boolean))];
+
+  if (!filterChips) return;
+
   filterChips.innerHTML = languages
     .map((language) => {
       const activeClass = currentFilter === language ? "active" : "";
@@ -237,7 +188,7 @@ function renderFilters() {
 }
 
 function getFilteredRepos() {
-  const query = searchInput.value.trim().toLowerCase();
+  const query = searchInput && searchInput.value ? searchInput.value.trim().toLowerCase() : "";
 
   return allRepos.filter((repo) => {
     const matchesFilter = currentFilter === "all" || repo.language === currentFilter;
@@ -252,21 +203,15 @@ function getFilteredRepos() {
   });
 }
 
-function attachDetailButtons() {
-  document.querySelectorAll(".btn-detail").forEach((button) => {
-    button.addEventListener("click", () => {
-      const repoName = button.dataset.repoName;
-      const repo = allRepos.find((item) => item.name === repoName);
-      if (repo) openRepoDetail(repo);
-    });
-  });
-}
-
 function renderRepos() {
   const filtered = getFilteredRepos();
 
   if (totalRepo) totalRepo.textContent = String(filtered.length);
-  if (totalLanguage) totalLanguage.textContent = String(new Set(filtered.map((repo) => repo.language).filter(Boolean)).size);
+  if (totalLanguage) {
+    totalLanguage.textContent = String(new Set(filtered.map((repo) => repo.language).filter(Boolean)).size);
+  }
+
+  if (!repoList) return;
 
   if (!filtered.length) {
     repoList.innerHTML = `
@@ -310,15 +255,12 @@ function renderRepos() {
 
           <div class="card-actions">
             ${appLink}
-            <button type="button" class="btn btn-secondary btn-detail" data-repo-name="${repo.name}">Details</button>
             <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Open Repo</a>
           </div>
         </article>
       `;
     })
     .join("");
-
-  attachDetailButtons();
 }
 
 function showUpdateToast() {
@@ -326,63 +268,66 @@ function showUpdateToast() {
 }
 
 function refreshApp() {
-  if (waitingWorker) {
-    waitingWorker.postMessage({ type: "SKIP_WAITING" });
-  }
+  if (waitingWorker) waitingWorker.postMessage({ type: "SKIP_WAITING" });
   window.location.reload();
 }
 
-searchInput.addEventListener("input", renderRepos);
+if (searchInput) {
+  searchInput.addEventListener("input", renderRepos);
+}
 
-if (repoDetailBackdrop) repoDetailBackdrop.addEventListener("click", closeRepoDetail);
-if (repoDetailClose) repoDetailClose.addEventListener("click", closeRepoDetail);
+if (installBtn) {
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredPrompt = event;
+    installBtn.classList.remove("hidden");
+  });
 
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && repoDetailModal && !repoDetailModal.classList.contains("hidden")) {
-    closeRepoDetail();
-  }
-});
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
 
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  deferredPrompt = event;
-  installBtn.classList.remove("hidden");
-});
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log("Install prompt outcome:", outcome);
 
-installBtn.addEventListener("click", async () => {
-  if (!deferredPrompt) return;
+    deferredPrompt = null;
+    installBtn.classList.add("hidden");
+  });
+}
 
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  console.log("Install prompt outcome:", outcome);
-
-  deferredPrompt = null;
-  installBtn.classList.add("hidden");
-});
-
-if (updateBtn) updateBtn.addEventListener("click", refreshApp);
+if (updateBtn) {
+  updateBtn.addEventListener("click", refreshApp);
+}
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register(`./sw.js?v=${APP_VERSION}`, { scope: "./", updateViaCache: "none" })
-      .then((registration) => {
-        console.log("Service Worker registered with version:", APP_VERSION);
-        registration.addEventListener("updatefound", () => {
-          const installing = registration.installing;
-          if (!installing) return;
+  window.addEventListener("load", async () => {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+      }
 
-          installing.addEventListener("statechange", () => {
-            if (installing.state === "installed" && navigator.serviceWorker.controller) {
-              showUpdateToast();
-              waitingWorker = installing;
-            }
-          });
-        });
-      })
-      .catch((error) => {
-        console.error("Service Worker registration failed:", error);
+      const registration = await navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`, {
+        scope: "./",
+        updateViaCache: "none",
       });
+
+      console.log("Service Worker registered with version:", APP_VERSION);
+
+      registration.addEventListener("updatefound", () => {
+        const installing = registration.installing;
+        if (!installing) return;
+
+        installing.addEventListener("statechange", () => {
+          if (installing.state === "installed" && navigator.serviceWorker.controller) {
+            showUpdateToast();
+            waitingWorker = installing;
+          }
+        });
+      });
+    } catch (error) {
+      console.error("Service Worker registration failed:", error);
+    }
   });
 
   navigator.serviceWorker.addEventListener("controllerchange", () => {
