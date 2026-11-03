@@ -745,3 +745,171 @@ h1 {
     padding: 12px;
   }
 }
+
+/* --- Baris pencarian + urutan --- */
+.search-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.sort-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.sort-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.sort-select {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  height: 60px;
+  cursor: pointer;
+}
+
+.sort-select option {
+  background: #0b1220;
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .search-row {
+    flex-direction: column;
+  }
+
+  .sort-box {
+    justify-content: space-between;
+  }
+
+  .sort-select {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+/* --- Kartu: kelompok badge, peringkat tren, pin, aktivitas --- */
+.badge-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.trend-rank {
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.status-badge.archived {
+  color: #e8d3a1;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.status-badge.pinned {
+  color: #e6ddfb;
+  background: rgba(139, 92, 246, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.repo-card.is-pinned {
+  border-color: rgba(139, 92, 246, 0.35);
+}
+
+.card-body h3 a {
+  color: inherit;
+}
+
+.card-body h3 a:hover {
+  color: var(--primary);
+}
+
+.activity-line {
+  color: var(--muted);
+  font-size: 0.76rem;
+  margin: -6px 0 14px;
+}
+
+.pin-btn {
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.pin-btn:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(139, 92, 246, 0.18);
+}
+
+.pin-btn[aria-pressed="true"] {
+  color: #f1e9ff;
+}
+
+/* --- Pratinjau README di modal --- */
+.readme-block {
+  margin: 0 0 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(15, 23, 42, 0.7);
+  overflow: hidden;
+}
+
+.readme-block summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+  list-style-position: inside;
+}
+
+.readme-block[open] summary {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.readme-block pre {
+  margin: 0;
+  padding: 14px 16px;
+  max-height: 260px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--muted);
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-size: 0.8rem;
+  line-height: 1.65;
+}
+
+/* --- Fokus keyboard: terlihat di semua kontrol --- */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
