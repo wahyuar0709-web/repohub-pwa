@@ -1,12 +1,12 @@
-const APP_VERSION = "2026-11-01-2";
+const APP_VERSION = "2026-11-03-1";
 const CACHE_NAME = `repohub-cache-${APP_VERSION}`;
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=2026-11-01-2",
-  "./app.js?v=2026-11-01-2",
-  "./manifest.json?v=2026-11-01-2",
-  "./icon.svg?v=2026-11-01-2",
+  "./styles.css?v=2026-11-03-1",
+  "./app.js?v=2026-11-03-1",
+  "./manifest.json?v=2026-11-03-1",
+  "./icon.svg?v=2026-11-03-1",
 ];
 
 self.addEventListener("install", (event) => {
